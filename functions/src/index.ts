@@ -48,7 +48,7 @@ app.post('/pay', (req, res) => {
         // });
 
         //update payment
-        let paymentDoc = clientdb.collection("payments").doc("2fonOT09AbVJ7DjggKAB");
+        let paymentDoc = clientdb.collection("payments").doc("XJNMbL90FnfW8eOFEMmp");
 
         console.log('paymentDoc: ', paymentDoc);
 
