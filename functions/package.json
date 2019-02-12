@@ -8,7 +8,7 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
-  "main": "lib/functions/src/index.js",
+  "main": "lib/src/index.js",
   "dependencies": {
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",

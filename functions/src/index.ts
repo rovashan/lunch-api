@@ -16,7 +16,7 @@ const clientServiceAccount = clientServiceAccountCredentials as admin.ServiceAcc
 const clientApp = admin.initializeApp({
     credential: admin.credential.cert(clientServiceAccount),
     databaseURL: "https://lunchpal-6437d.firebaseio.com"
-});
+}, 'clientApp');
 const clientdb = clientApp.firestore();
 
 const app = express();
@@ -40,6 +40,11 @@ app.post('/pay', (req, res) => {
     apidb.collection('payment_response_logs').add(req.body);
 
     //get payment
+    clientdb.collection("payments").get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            console.log(`${doc.id} => ${doc.data()}`);
+        });
+    });
 
     //successful payment
     if (pay.TRANSACTION_STATUS === '1' && pay.RESULT_CODE === '990017') {
