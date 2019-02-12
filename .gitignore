@@ -63,3 +63,5 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+/lunchpal-6437d-firebase-adminsdk-3r3u4-d3deaf5235.json

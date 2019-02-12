@@ -1,21 +1,23 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import * as clientServiceAccountCredentials from '../../lunchpal-6437d-firebase-adminsdk-3r3u4-d3deaf5235.json';
+import * as clientServiceAccountCredentials from '../lunchpal-6437d-firebase-adminsdk-3r3u4-d3deaf5235.json';
 
 import * as express from 'express';
 import * as cors from 'cors';
 import * as bodyParser from "body-parser";
 import { Pay } from './pay';
 
-//admin.initializeApp(functions.config().firebase);
-//const apidb = admin.firestore();
-const clientServiceAccount = clientServiceAccountCredentials as admin.ServiceAccount
+//lunch-api firestore setup
+admin.initializeApp(functions.config().firebase);
+const apidb = admin.firestore();
 
-let clientApp = admin.initializeApp({
+//lunch-pal firestore setup
+const clientServiceAccount = clientServiceAccountCredentials as admin.ServiceAccount
+const clientApp = admin.initializeApp({
     credential: admin.credential.cert(clientServiceAccount),
     databaseURL: "https://lunchpal-6437d.firebaseio.com"
 });
-let clientdb = clientApp.firestore();
+const clientdb = clientApp.firestore();
 
 const app = express();
 const main = express();
@@ -35,8 +37,9 @@ app.post('/pay', (req, res) => {
     pay = req.body;
 
     //log to api db
-    //apidb.collection('payment_response_logs').add(req.body);
-    clientdb.collection('payments').add(req.body);
+    apidb.collection('payment_response_logs').add(req.body);
+
+    //get payment
 
     //successful payment
     if (pay.TRANSACTION_STATUS === '1' && pay.RESULT_CODE === '990017') {
@@ -59,6 +62,6 @@ app.post('/pay', (req, res) => {
         //show eror description from response
     }
 
-    res.send(pay);
+    res.send('hey');
 });
 
