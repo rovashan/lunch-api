@@ -38,23 +38,42 @@ app.post('/pay', (req, res) => {
 
     //log to api db
     apidb.collection('payment_response_logs').add(req.body);
-
-    //get payment
-    clientdb.collection("payments").get().then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-            console.log(`${doc.id} => ${doc.data()}`);
-        });
-    });
-
+    
     //successful payment
     if (pay.TRANSACTION_STATUS === '1' && pay.RESULT_CODE === '990017') {
+
         //get payment doc from client db
+        // clientdb.collection("payments").doc("2fonOT09AbVJ7DjggKAB").get().then((querySnapshot) => {
+        //     console.log(querySnapshot.data());
+        // });
 
         //update payment
+        let paymentDoc = clientdb.collection("payments").doc("2fonOT09AbVJ7DjggKAB");
+
+        console.log('paymentDoc: ', paymentDoc);
+
+        paymentDoc.update({
+           paymentStatus: "PAID"
+        });
+
 
         //create subscription
+        let subscription = {
+            userName: 'userName',
+            userId: 'userId',
+            planName: 'planName',
+            planInitDate: 'initDate',
+            planExpDate: 'expDate',
+            planId: 'planId',
+            planCredits: 'planCredits',
+            address: 'deliveryAddress'
+          };
+        
+          clientdb.collection("subscriptions").add(subscription);
+
 
         //redirect
+        res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
 
     }
     else if (pay.TRANSACTION_STATUS === '3' && pay.RESULT_CODE === '990099002817') {
@@ -67,6 +86,6 @@ app.post('/pay', (req, res) => {
         //show eror description from response
     }
 
-    res.send('hey');
+    //res.send('heya');
 });
 
