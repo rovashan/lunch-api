@@ -13,6 +13,7 @@ const apidb = admin.firestore();
 
 //lunch-pal firestore setup
 const clientServiceAccount = clientServiceAccountCredentials as admin.ServiceAccount
+
 const clientApp = admin.initializeApp({
     credential: admin.credential.cert(clientServiceAccount),
     databaseURL: "https://lunchpal-6437d.firebaseio.com"
@@ -33,6 +34,8 @@ export const webApi = functions.https.onRequest(main);
 
 // api functions
 app.post('/pay', (req, res) => {
+
+    
     let pay: Pay = new Pay();
     pay = req.body;
 
@@ -54,9 +57,7 @@ app.post('/pay', (req, res) => {
 
         paymentDoc.update({
            paymentStatus: "PAID"
-        });
-
-
+        }).then(data => {
         //create subscription
         let subscription = {
             userName: 'userName',
@@ -67,13 +68,16 @@ app.post('/pay', (req, res) => {
             planId: 'planId',
             planCredits: 'planCredits',
             address: 'deliveryAddress'
-          };
-        
-          clientdb.collection("subscriptions").add(subscription);
-
-
-        //redirect
-        res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
+        };
+         clientdb.collection("subscriptions").add(subscription)
+        .then(()=> {
+            //do other stuff remember to redirect after all is done 
+            //inside the then()
+            res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
+         return true;
+        })
+        .catch(err => console.log(err));
+        });
 
     }
     else if (pay.TRANSACTION_STATUS === '3' && pay.RESULT_CODE === '990099002817') {
