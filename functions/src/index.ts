@@ -5,6 +5,8 @@ import * as clientServiceAccountCredentials from '../lunchpal-6437d-firebase-adm
 import * as express from 'express';
 import * as cors from 'cors';
 import * as bodyParser from "body-parser";
+import * as request from 'request';
+
 import { Pay } from './pay';
 
 //lunch-api firestore setup
@@ -32,64 +34,86 @@ main.use(bodyParser.urlencoded({ extended: false }));
 // a parameter
 export const webApi = functions.https.onRequest(main);
 
-// api functions
+//api functions
 app.post('/pay', (req, res) => {
+    //log to api db
+    apidb.collection('payment_response_logs').add(req.body);
 
-    
     let pay: Pay = new Pay();
     pay = req.body;
 
-    //log to api db
-    apidb.collection('payment_response_logs').add(req.body);
-    
-    //successful payment
-    if (pay.TRANSACTION_STATUS === '1' && pay.RESULT_CODE === '990017') {
+    // Calc checksum
+    request.post('https://mutex.co.za/api/calcresponse', {
+        json: true,
+        body: pay
+    }, function (err, result, body) {
+        let payChecked: Pay = new Pay();
+        payChecked = body;
 
-        //get payment doc from client db
-        // clientdb.collection("payments").doc("2fonOT09AbVJ7DjggKAB").get().then((querySnapshot) => {
-        //     console.log(querySnapshot.data());
-        // });
+        if (pay.CHECKSUM !== payChecked.CHECKSUM) {
+            res.status(400).send('CHECKSUM FAILED')
+        }
 
-        //update payment
-        let paymentDoc = clientdb.collection("payments").doc("XJNMbL90FnfW8eOFEMmp");
+        if (pay.TRANSACTION_STATUS === '1' && pay.RESULT_CODE === '990017') {
+            /*successful payment*/
 
-        console.log('paymentDoc: ', paymentDoc);
+            //update payment
+            let paymentDoc = clientdb.collection("payments").doc(pay.REFERENCE);
 
-        paymentDoc.update({
-           paymentStatus: "PAID"
-        }).then(data => {
-        //create subscription
-        let subscription = {
-            userName: 'userName',
-            userId: 'userId',
-            planName: 'planName',
-            planInitDate: 'initDate',
-            planExpDate: 'expDate',
-            planId: 'planId',
-            planCredits: 'planCredits',
-            address: 'deliveryAddress'
-        };
-         clientdb.collection("subscriptions").add(subscription)
-        .then(()=> {
-            //do other stuff remember to redirect after all is done 
-            //inside the then()
+            paymentDoc.get().then(doc => {
+
+                const paymentData = doc.data();
+
+                paymentDoc.update({
+                    paymentStatus: "PAID"
+                }).then(() => {
+
+                    //create subscription
+                    if (paymentData) {
+                        let planId = paymentData['subscribedPlan'];
+                        let planDoc = clientdb.collection("plans").doc(planId);
+
+                        planDoc.get().then(plan => {
+                            const planData = plan.data();
+
+                            if (planData) {
+
+                                const subscription = {
+                                    userName: paymentData['username'],
+                                    userId: paymentData['userReference'],
+                                    planName: planData['name'],
+                                    startDate: '2019-02-25',
+                                    endDate: '2020-02-25',
+                                    planId: paymentData['subscribedPlan'],
+                                    planCredits: planData['creditsPerDay'],
+                                    status: 'ACTIVE'
+                                };
+                                clientdb.collection("subscriptions").add(subscription)
+                                    .then(() => {
+                                        //do other stuff remember to redirect after all is done 
+                                        //inside the then()
+                                        res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
+                                        return true;
+                                    })
+                                    .catch(err => console.log(err));
+                            }
+                        });
+
+                    }
+                });
+
+            });
+        }
+        else if (pay.TRANSACTION_STATUS === '3' && pay.RESULT_CODE === '990099002817') {
+            /*user cancelled*/
+
+            //redirect to home
             res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
-         return true;
-        })
-        .catch(err => console.log(err));
-        });
+        } else {
+            /*error*/
 
-    }
-    else if (pay.TRANSACTION_STATUS === '3' && pay.RESULT_CODE === '990099002817') {
-        //user cancelled
-        //redirect to home
-
-    } else {
-        //error
-        //redirect to error page
-        //show eror description from response
-    }
-
-    //res.send('heya');
+            //redirect to error page
+            //show eror description from response
+        }
+    });
 });
-
