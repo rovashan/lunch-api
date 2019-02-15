@@ -81,11 +81,13 @@ app.post('/pay', (req, res) => {
                         if (paymentData) {
     
                             const subscription = {
+                                userAddress: paymentData['userAddress'],
                                 userName: paymentData['username'],
-                                userId: paymentData['userReference'],
+                                userId: paymentData['userId'],
                                 plan: paymentData['subscribedPlan'],
                                 startDate: '2019-02-25',
                                 endDate: '2020-02-25',
+                                paymentReference: doc.id,
                                 status: 'ACTIVE'
                             };
                             clientdb.collection("subscriptions").add(subscription)
@@ -96,26 +98,6 @@ app.post('/pay', (req, res) => {
                                     //return true;
                                 })
                                 .catch(err => console.log(err));
-    
-                            // const subscription = {
-                            //     userName: paymentData['username'],
-                            //     userId: paymentData['userReference'],
-                            //     planName: planData['name'],
-                            //     startDate: '2019-02-25',
-                            //     endDate: '2020-02-25',
-                            //     planId: paymentData['subscribedPlan'],
-                            //     planCredits: planData['creditsPerDay'],
-                            //     status: 'ACTIVE'
-                            // };
-                            // clientdb.collection("subscriptions").add(subscription)
-                            //     .then(() => {
-                            //         //do other stuff remember to redirect after all is done 
-                            //         //inside the then()
-                            //         res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
-                            //         return true;
-                            //     })
-                            //     .catch(err => console.log(err));
-    
                         }
                     });
     
