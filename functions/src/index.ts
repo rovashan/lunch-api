@@ -84,8 +84,8 @@ app.post('/pay', (req, res) => {
                                 createdDate: new Date(),
                                 userId: paymentData['userId'], 
                                 plan: paymentData['subscribedPlan'],
-                                startDate: '2019-02-25',
-                                endDate: '2020-02-25',
+                                startDate: paymentData['subscriptionStartDate'],
+                                endDate: paymentData['subscriptionEndDate'],
                                 paymentReference: doc.id,
                                 status: 'ACTIVE'
                             };
