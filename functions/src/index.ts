@@ -81,9 +81,8 @@ app.post('/pay', (req, res) => {
                         if (paymentData) {
     
                             const subscription = {
-                                userAddress: paymentData['userAddress'],
-                                userName: paymentData['username'],
-                                userId: paymentData['userId'],
+                                createdDate: new Date(),
+                                userId: paymentData['userId'], 
                                 plan: paymentData['subscribedPlan'],
                                 startDate: '2019-02-25',
                                 endDate: '2020-02-25',
@@ -94,8 +93,17 @@ app.post('/pay', (req, res) => {
                                 .then(() => {
                                     //do other stuff remember to redirect after all is done 
                                     //inside the then()
-                                    res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
-                                    //return true;
+
+                                    // update user info
+                                    clientdb.collection('users').doc(paymentData['userId']).update({
+                                        firstName: paymentData['firstName'],
+                                        lastName: paymentData['lastName'],
+                                        address: paymentData['userAddress'],
+                                        phone: paymentData['phone']
+                                    }).then( () => {
+                                        res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
+                                    });
+                                    
                                 })
                                 .catch(err => console.log(err));
                         }
