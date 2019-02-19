@@ -99,6 +99,7 @@ app.post('/pay', (req, res) => {
                                         firstName: paymentData['firstName'],
                                         lastName: paymentData['lastName'],
                                         address: paymentData['userAddress'],
+                                        building: paymentData['userBuilding'],
                                         phone: paymentData['phone']
                                     }).then( () => {
                                         res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
