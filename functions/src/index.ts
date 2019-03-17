@@ -102,7 +102,7 @@ app.post('/pay', (req, res) => {
                                         building: paymentData['userBuilding'],
                                         phone: paymentData['phone']
                                     }).then( () => {
-                                        res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
+                                        res.redirect('https://lunchpal.co.za/home');
                                     });
                                     
                                 })
@@ -116,7 +116,7 @@ app.post('/pay', (req, res) => {
                 /*user cancelled*/
     
                 //redirect to home
-                res.redirect('https://lunchpal-6437d.firebaseapp.com/home');
+                res.redirect('https://lunchpal.co.za/home');
             } else {
                 /*error*/
     
