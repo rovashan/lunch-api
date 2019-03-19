@@ -47,7 +47,7 @@ app.post('/pay', (req, res) => {
         json: true,
         body: pay
     }, function (err, result, body) {
-        
+
         // console.log('err: ', err);
         // console.log('result: ', result);
         // console.log('body: ', body);
@@ -63,26 +63,26 @@ app.post('/pay', (req, res) => {
         if (pay.CHECKSUM === payChecked.CHECKSUM) {
             if (pay.TRANSACTION_STATUS === '1' && pay.RESULT_CODE === '990017') {
                 /*successful payment*/
-    
+
                 console.log('pay: ', pay);
-    
+
                 //update payment
                 let paymentDoc = clientdb.collection("payments").doc(pay.REFERENCE);
-    
+
                 paymentDoc.get().then(doc => {
-    
+
                     const paymentData = doc.data();
-    
+
                     paymentDoc.update({
                         paymentStatus: "PAID"
                     }).then(() => {
-    
+
                         //create subscription
                         if (paymentData) {
-    
+
                             const subscription = {
                                 createdDate: new Date(),
-                                userId: paymentData['userId'], 
+                                userId: paymentData['userId'],
                                 plan: paymentData['subscribedPlan'],
                                 startDate: paymentData['subscriptionStartDate'],
                                 endDate: paymentData['subscriptionEndDate'],
@@ -90,7 +90,7 @@ app.post('/pay', (req, res) => {
                                 status: 'ACTIVE'
                             };
                             clientdb.collection("subscriptions").add(subscription)
-                                .then(() => {
+                                .then((docRef) => {
                                     //do other stuff remember to redirect after all is done 
                                     //inside the then()
 
@@ -100,34 +100,49 @@ app.post('/pay', (req, res) => {
                                         lastName: paymentData['lastName'],
                                         address: paymentData['userAddress'],
                                         building: paymentData['userBuilding'],
-                                        phone: paymentData['phone']
-                                    }).then( () => {
-                                        res.redirect('https://lunchpal.co.za/home');
+                                        phone: paymentData['phone'],
+                                        subscription: docRef.id,
+                                        status: 'Active'
+                                    }).then(() => {
+                                        // Add user settings
+                                        let userSettings = {
+                                            dailyLimit: true,
+                                            reminders: true
+                                        }
+                                        clientdb.collection('settings').doc(paymentData['userId']).set(userSettings)
+                                            .then(() => {
+                                                res.redirect('https://lunchpal.co.za/canteen');
+                                            })
+                                            .catch(err => console.log(err));
                                     });
-                                    
+
                                 })
                                 .catch(err => console.log(err));
                         }
                     });
-    
+
                 });
             }
             else if (pay.TRANSACTION_STATUS === '3' && pay.RESULT_CODE === '990099002817') {
                 /*user cancelled*/
-    
+
                 //redirect to home
                 res.redirect('https://lunchpal.co.za/home');
             } else {
                 /*error*/
-    
+
                 //redirect to error page
                 //show eror description from response
             }
-        
+
         }
         else {
             res.status(400).send('CHECKSUM FAILED')
         }
 
     });
+});
+
+app.get('/serverDate', (req, res) => {
+    res.send(new Date());
 });
