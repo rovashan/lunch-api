@@ -87,7 +87,8 @@ app.post('/pay', (req, res) => {
                                 startDate: paymentData['subscriptionStartDate'],
                                 endDate: paymentData['subscriptionEndDate'],
                                 paymentReference: doc.id,
-                                status: 'ACTIVE'
+                                status: 'ACTIVE',
+                                remainingBalance: paymentData['subscribedPlan']['planPrice']
                             };
                             clientdb.collection("subscriptions").add(subscription)
                                 .then((docRef) => {
@@ -102,7 +103,7 @@ app.post('/pay', (req, res) => {
                                         building: paymentData['userBuilding'],
                                         phone: paymentData['phone'],
                                         subscription: docRef.id,
-                                        status: 'Active'
+                                        status: 'ACTIVE'
                                     }).then(() => {
                                         // Add user settings
                                         let userSettings = {
