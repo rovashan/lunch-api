@@ -107,7 +107,7 @@ app.post('/pay', (req, res) => {
                                     }).then(() => {
                                         // Add user settings
                                         let userSettings = {
-                                            dailyLimit: true,
+                                            dailyLimit: false,
                                             reminders: true
                                         }
                                         clientdb.collection('settings').doc(paymentData['userId']).set(userSettings)
