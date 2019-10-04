@@ -5,7 +5,7 @@ Server-side API for [Lunchpal](https://github.com/rovashan/Lunchpal) that handle
 
 ### Tech
 
-Express NodeJs app hosted inside Firebase Functions.
+Express NodeJS app hosted inside Firebase Functions.
 
 
 License
